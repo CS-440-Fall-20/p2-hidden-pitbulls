@@ -65,8 +65,8 @@ def PixelColour(melodyArr: [], sig: int, startingNote: str):
 
     '''
 
-    x = len(melodyArr)
-    y = x // sig
+    x = sig
+    y = len(melodyArr) // sig
     img = MyImage((x, y), 0, 100, 'RGBA')
     startingColor = mapping[startingNote]
 
