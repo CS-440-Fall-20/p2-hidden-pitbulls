@@ -1,3 +1,5 @@
+# WORKING ON GITHUB NOW - ON REPL.IT THIS MIGHT BE OUTDATED
+
 from myimage import MyImage
 
 '''
