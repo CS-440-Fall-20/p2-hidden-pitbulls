@@ -103,12 +103,30 @@ def _ChordToNotes(chord: str):
     return ret
 
 def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
+    '''
+    Helper function to interpolate colors 
+    between two pixels on a horizontal line
+
+    Arguments:
+    img as MyImage object to write pixels into.
+    startPos as starting pixel position.
+    endPos as ending pixel position.
+    startColor as color of starting pixel in rgba tuple.
+    endColor as color of ending pixel in rgba tuple.
+
+    Returns: 
+    the MyImage object img after interpolation.
+
+    '''
     diff = abs(endPos[0] - startPos[0])
+
+    # Color component gradients
     r_grad = (endColor[0] - startColor[0]) / diff
     g_grad = (endColor[1] - startColor[1]) / diff
     b_grad = (endColor[2] - startColor[2]) / diff
     # a_grad = (endColor[3] - startColor[3]) / diff
 
+    # Coloring starting pixel
     img.putpixel(startPos, startColor)
 
     x = startPos[0]
@@ -116,8 +134,11 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
     r = startColor[0]
     g = startColor[1]
     b = startColor[2]
-    a = 180
+    # alpha value lowered to differentiate
+    # between played notes and interpolated colors
+    a = 180 
 
+    # Interpolating and coloring
     for pixelPos in range(1, diff):
       x += 1
       r += r_grad
@@ -127,6 +148,7 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
 
       img.putpixel((x, y), (round(r), round(g), round(b), round(a)))
 
+    # Coloring ending pixel
     img.putpixel(endPos, endColor)
 
     return img
@@ -140,7 +162,7 @@ def CreateWall(music: []):
     music as a list of chords.
 
     Returns: 
-    MyImage object.
+    The MyImage object img that contains the wall.
 
     '''
 
@@ -188,6 +210,7 @@ def CreateWall(music: []):
     return img
 
 def _test():
+
     music = [
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
