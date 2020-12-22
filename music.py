@@ -16,8 +16,7 @@ Color wheel for notes on the western chromatic scale:
   Green: (0, 255, 0), Green-Cyan: (0, 255, 127),
   Cyan: (0, 255, 255), Blue-Cyan: (0, 127, 255), 
   Blue: (0, 0, 255), Blue-Magenta: (127, 0, 255), 
-  Magenta: (255, 0, 255), Red-Magenta: (255, 0, 127),
-  White: (255, 255, 255)
+  Magenta: (255, 0, 255), Red-Magenta: (255, 0, 127)
 
 '''
 
@@ -36,8 +35,7 @@ mapping = {
   'C#': (0, 255, 0), 'D': (0, 255, 127),
   'D#': (0, 255, 255), 'E': (0, 127, 255), 
   'F': (0, 0, 255), 'F#': (127, 0, 255), 
-  'G': (255, 0, 255), 'G#': (255, 0, 127),
-  'N': (255, 255, 255)
+  'G': (255, 0, 255), 'G#': (255, 0, 127)
 }
 
 def _ChordToNotes(chord: str):
@@ -86,7 +84,7 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
     r_grad = (endColor[0] - startColor[0]) / diff
     g_grad = (endColor[1] - startColor[1]) / diff
     b_grad = (endColor[2] - startColor[2]) / diff
-    a_grad = (endColor[3] - startColor[3]) / diff
+    # a_grad = (endColor[3] - startColor[3]) / diff
 
     img.putpixel(startPos, startColor)
 
@@ -95,14 +93,14 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
     r = startColor[0]
     g = startColor[1]
     b = startColor[2]
-    a = startColor[3]
+    a = 180
 
     for pixelPos in range(1, diff):
-      x += pixelPos
+      x += 1
       r += r_grad
       g += g_grad
       b += b_grad
-      a += a_grad
+      # a += a_grad
 
       img.putpixel((x, y), (round(r), round(g), round(b), round(a)))
 
@@ -137,25 +135,30 @@ def CreateWall(music: []):
       # If it is not silent
       if (chord != 'N'):
         # Extracting notes from the chord
-        notes = _ChordToNotes(music[chordPos])
-        
+        notes = _ChordToNotes(chord)
+
         # Values needed to interpolate between notes
         notesLastInd = len(notes) - 1
         jump = 15 // notesLastInd
 
-        # For each note except the last two
+        # For each pairs of notes except the last two
         for i in range(notesLastInd - 1):
           # Storing start and end colors
           startColor = mapping[notes[i]] + (255,)
           endColor = mapping[notes[i + 1]] + (255,)
 
           # Interpolating colors in the middle accordingly
-          _InterpolateHorizontal(img, ((jump * i), chordPos), ((jump * (i + 1)), chordPos), startColor, endColor)
+          img = _InterpolateHorizontal(img, ((jump * i), chordPos), ((jump * (i + 1)), chordPos), startColor, endColor)
 
         # Interpolating colors between the last two notes
         startColor = endColor
         endColor = mapping[notes[notesLastInd]] + (255,)
-        _InterpolateHorizontal(img, ((jump * (notesLastInd - 1)), chordPos), (15, chordPos), startColor, endColor)
+        img = _InterpolateHorizontal(img, ((jump * (notesLastInd - 1)), chordPos), (15, chordPos), startColor, endColor)
+
+      else:
+        # Else fill a white line of 16 pixels
+        color = (255,) * 4
+        img = _InterpolateHorizontal(img, (0, chordPos), (15, chordPos), color, color)
 
     # Showing and returning image
     img.show()  
@@ -173,13 +176,13 @@ def _test():
       'D', 'N', 'D', 'D', 'N', 'D', 'D', 'D',
       'D', 'N', 'D', 'D', 'N', 'D', 'D', 'D',
 
-      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
-      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
-      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
-      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D',
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D',
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D',
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D',
 
-      'Em', 'N', 'Em', 'Em', 'N', 'Em', 'Em', 'Em'
-      'A7', 'N', 'A7', 'A7', 'N', 'A7', 'A7', 'A7'
+      'Em', 'N', 'Em', 'Em', 'N', 'Em', 'Em', 'Em',
+      'A7', 'N', 'A7', 'A7', 'N', 'A7', 'A7', 'A7',
       'A#', 'N', 'A#', 'A#', 'N', 'A#', 'A#', 'A#'
     ]
 
