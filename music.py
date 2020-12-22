@@ -3,25 +3,12 @@
 from myimage import MyImage
 
 '''
-2D Array containing the music melodic sequence:
+An array containing the musical sequence in chords:
+Each entry music[m] of the array is a single beat. 
+It can either be a chord (fifth, major, minor or seventh) or silence.
+N refers to null, or beats with silence. 
 
-Each entry M[m] of the array is a single beat. 
-It can either be a musical note or silence.
-M[m][0] contains the musical note and it's octave value (i.e 'C3').
-M[m][1] contains the duration that the note is played for; 
-2 is a full duration note, 1 is a half duration note, etc.
-This convention can be changed however the lowest  
-unit of note should always be represented by 1.
-NN refers to null, or beats with silence. 
-Like a note, a silent beat will have a duration value.
-For example:
-M = 
-[
-  ('C3', 1), ('C3', 1), ('D3', 2), ('NN', 2), 
-  ('C3', 2), ('NN', 2), ('E3', 2), ('C3', 4)
-]
-
-Color wheel:
+Color wheel for notes on the western chromatic scale:
   Reference: https://i.pinimg.com/originals/ad/4b/cf/ad4bcfcd6b94b8be1aaa9717c08ff580.png
 
   Red: (255, 0, 0), Orange: (255, 127, 0), 
@@ -29,15 +16,18 @@ Color wheel:
   Green: (0, 255, 0), Green-Cyan: (0, 255, 127),
   Cyan: (0, 255, 255), Blue-Cyan: (0, 127, 255), 
   Blue: (0, 0, 255), Blue-Magenta: (127, 0, 255), 
-  Magenta: (255, 0, 255), Red-Magenta: (255, 0, 127)
-
-
-The western chromatic scale: 
-Sharp representation (#) of accidental notes 
-is used rather than flat representation (b)
-['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'] 
+  Magenta: (255, 0, 255), Red-Magenta: (255, 0, 127),
+  White: (255, 255, 255)
 
 '''
+
+# The western chromatic scale: 
+# Sharp representation (#) of accidental notes 
+# is used rather than flat representation (b).
+chroma = [
+  'A', 'A#', 'B', 'C', 'C#', 'D', 
+  'D#', 'E', 'F', 'F#', 'G', 'G#'
+] 
 
 # The chromatic scale to color wheel mapping
 mapping = {
@@ -47,101 +37,154 @@ mapping = {
   'D#': (0, 255, 255), 'E': (0, 127, 255), 
   'F': (0, 0, 255), 'F#': (127, 0, 255), 
   'G': (255, 0, 255), 'G#': (255, 0, 127),
-  'NN': (255, 255, 255)
+  'N': (255, 255, 255)
 }
 
-def PixelColour(melodyArr: [], sig: int):
+def _ChordToNotes(chord: str):
+    '''
+    Helper function to return notes given a chord.
+    Only for chords fifth, major, minor and seventh.
+
+    Arguments:
+    chord as a string
+
+    Returns:
+    A list of notes
+
+    '''
+
+    # Separating first note and chord types   
+    firstNote = ''
+    chordType = ''
+
+    for char in chord:
+      if (char in 'ABCDEN#'):
+        firstNote += char
+      elif (char in 'm57M'):
+        chordType += char
+
+    if (len(chordType) == 0):
+      chordType += 'M'
+
+    # Finding the position of first note
+    # on the chromatic scale
+    chromaInd = chroma.index(firstNote)
+
+    # Returning list of notes according to
+    # first note and chord type
+    if (chordType == '5'):
+      return [firstNote, chroma[chromaInd + 4]]
+    elif (chordType == 'M'):
+      return [firstNote, chroma[chromaInd + 2], chroma[chromaInd + 4]]
+    elif (chordType == 'm'):
+      return [firstNote, chroma[chromaInd + 3], chroma[chromaInd + 4]]
+    else:
+      return [firstNote, chroma[chromaInd + 2], chroma[chromaInd + 4], chroma[chromaInd + 6]]
+
+def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
+    diff = abs(endPos[0] - startPos[0])
+    r_grad = (endColor[0] - startColor[0]) / diff
+    g_grad = (endColor[1] - startColor[1]) / diff
+    b_grad = (endColor[2] - startColor[2]) / diff
+    a_grad = (endColor[3] - startColor[3]) / diff
+
+    img.putpixel(startPos, startColor)
+
+    x = startPos[0]
+    y = startPos[1]
+    r = startColor[0]
+    g = startColor[1]
+    b = startColor[2]
+    a = startColor[3]
+
+    for pixelPos in range(1, diff):
+      x += pixelPos
+      r += r_grad
+      g += g_grad
+      b += b_grad
+      a += a_grad
+
+      img.putpixel((x, y), (round(r), round(g), round(b), round(a)))
+
+    img.putpixel(endPos, endColor)
+
+    return img
+    
+
+def CreateWall(music: []):
     '''
     Function to convert a melody to an image
 
     Arguments:
-    melodyArr is the array of melodic beats described above.
-    sig is the time signature of the music; 
-    e.g. 8 beats per measure, 16 beats per measure, etc.
-    --startingNote is the first note of the melody.-- (REMOVED)
-    --key is the key the song is in; e.g. A, C, Dm, F#.--(REMOVED)
+    music as a list of chords.
 
     Returns: 
-    MyImage object
+    MyImage object.
 
     '''
 
-    # Setting x dimension
-    x = sig 
-
-    # Counting total duration of   
-    # melody in beats for y dimension
-    totalBeats = 0
-    for noteOctDur in melodyArr:
-      totalBeats += noteOctDur[1]
-
     # Setting y dimension
-    y = totalBeats // sig
+    yDim = len(music)
     
     # Creating image
-    img = MyImage((x, y), 0, 100, 'RGBA')
+    img = MyImage((16, yDim), 0, 20, 'RGBA')
 
-    # Keeping track of beats and 
-    # measures or x and y values
-    beat = 0
-    measure = 0
+    # For each chord position or y value
+    for chordPos in range(yDim):
+      # Storing the chord
+      chord = music[chordPos]
 
-    for noteOctDur in melodyArr:
-      
-      # Separating note and octave
-      note = ''
-      octave = ''
-      for char in noteOctDur[0]:
-        if (char in 'ABCDEN#'):
-          note += char
-        else:
-          octave += char
-
-      # Converting octave from
-      # str to int for alpha value
-      if (len(octave) != 0):
-        octave = int(octave)
-      else:
-        octave = 0
-
-      for halfNote in range(noteOctDur[1]):
+      # If it is not silent
+      if (chord != 'N'):
+        # Extracting notes from the chord
+        notes = _ChordToNotes(music[chordPos])
         
-        # Setting alpha value based on octave
-        alphaVal = int((255 / 8) * (8 - octave))
+        # Values needed to interpolate between notes
+        notesLastInd = len(notes) - 1
+        jump = 15 // notesLastInd
 
-        # Adding the colored pixel to the image
-        img.putpixel((beat, measure), mapping[note] + (alphaVal,))
-        
-        # Changing beats and measures
-        # or x and y values
-        beat += 1
-        if (beat == sig):
-          measure = (measure + 1) % y
-        beat = beat % x
+        # For each note except the last two
+        for i in range(notesLastInd - 1):
+          # Storing start and end colors
+          startColor = mapping[notes[i]] + (255,)
+          endColor = mapping[notes[i + 1]] + (255,)
+
+          # Interpolating colors in the middle accordingly
+          _InterpolateHorizontal(img, ((jump * i), chordPos), ((jump * (i + 1)), chordPos), startColor, endColor)
+
+        # Interpolating colors between the last two notes
+        startColor = endColor
+        endColor = mapping[notes[notesLastInd]] + (255,)
+        _InterpolateHorizontal(img, ((jump * (notesLastInd - 1)), chordPos), (15, chordPos), startColor, endColor)
 
     # Showing and returning image
     img.show()  
     return img
 
-    '''
-    MUST DELETE FOLLOWING COMMENTS - ONLY FOR DEVELOPERS
-    1. Create an empty instance of myimage class with a large enough size for virtual pixels. 
-    x dimension of the image will be sig; y dimension will be size(melodyArr) // no of beats per measure
-    2. Determine the starting colour based on the root note of the music key. For example, 
-    if music is in the key of A, the starting colour is Red (use chromatic scale to colour wheel mapping).
-    3. Iterate over each ith element of the melodyArr, based on the sig value. 
-    For example, if the music is in a time signature of 8 beats, after every 7th iteration we start with 
- 
-    '''
+def _test():
+    music = [
+      'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
+      'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
+      'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
+      'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
 
-def _test1():
-  M = [
-    ('C3', 1), ('C3', 1), ('D3', 2), ('NN', 2), 
-    ('C3', 2), ('NN', 2), ('E3', 2), ('C3', 4)
-  ]
-  
-  PixelColour(M, 4)
+      'Em', 'N', 'Em', 'Em', 'A7', 'N', 'A7', 'A7',
+      'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
+      'D', 'N', 'D', 'D', 'N', 'D', 'D', 'D',
+      'D', 'N', 'D', 'D', 'N', 'D', 'D', 'D',
+
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
+      'Bm', 'N', 'Bm', 'Bm', 'D', 'N', 'D', 'D'
+
+      'Em', 'N', 'Em', 'Em', 'N', 'Em', 'Em', 'Em'
+      'A7', 'N', 'A7', 'A7', 'N', 'A7', 'A7', 'A7'
+      'A#', 'N', 'A#', 'A#', 'N', 'A#', 'A#', 'A#'
+    ]
+
+    CreateWall(music)
     
 if __name__ == '__main__':
-  _test1()
+  _test()
   
