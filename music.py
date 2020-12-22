@@ -9,14 +9,16 @@ Each entry M[m] of the array is a single beat.
 It can either be a musical note or silence.
 M[m][0] contains the musical note and it's octave value (i.e 'C3').
 M[m][1] contains the duration that the note is played for; 
-1 is a full duration note, 1/2 is a half duration note, etc.
+2 is a full duration note, 1 is a half duration note, etc.
+This convention can be changed however the lowest  
+unit of note should always be represented by 1.
 NN refers to null, or beats with silence. 
 Like a note, a silent beat will have a duration value.
 For example:
 M = 
 [
-  ('C3', 1/2), ('C3', 1/2), ('D3', 1), ('NN', 1), 
-  ('C3', 1), ('NN', 1), ('E3', 1), ('C3', 2)
+  ('C3', 1), ('C3', 1), ('D3', 2), ('NN', 2), 
+  ('C3', 2), ('NN', 2), ('E3', 2), ('C3', 4)
 ]
 
 Color wheel:
@@ -38,18 +40,17 @@ is used rather than flat representation (b)
 '''
 
 # The chromatic scale to color wheel mapping
-mapping = 
-{
+mapping = {
   'A': (255, 0, 0), 'A#': (255, 127, 0), 
   'B': (255, 255, 0), 'C': (127, 255, 0), 
   'C#': (0, 255, 0), 'D': (0, 255, 127),
   'D#': (0, 255, 255), 'E': (0, 127, 255), 
   'F': (0, 0, 255), 'F#': (127, 0, 255), 
-  'G': (255, 0, 255), 'G#': (255, 0, 127)
+  'G': (255, 0, 255), 'G#': (255, 0, 127),
   'NN': (255, 255, 255)
 }
 
-def PixelColour(melodyArr: [], sig: int, startingNote: str):
+def PixelColour(melodyArr: [], sig: int):
     '''
     Function to convert a melody to an image
 
@@ -57,7 +58,7 @@ def PixelColour(melodyArr: [], sig: int, startingNote: str):
     melodyArr is the array of melodic beats described above.
     sig is the time signature of the music; 
     e.g. 8 beats per measure, 16 beats per measure, etc.
-    startingNote is the first note of the melody.
+    --startingNote is the first note of the melody.-- (REMOVED)
     --key is the key the song is in; e.g. A, C, Dm, F#.--(REMOVED)
 
     Returns: 
@@ -65,15 +66,60 @@ def PixelColour(melodyArr: [], sig: int, startingNote: str):
 
     '''
 
-    x = sig
-    y = len(melodyArr) // sig
+    # Setting x dimension
+    x = sig 
+
+    # Counting total duration of   
+    # melody in beats for y dimension
+    totalBeats = 0
+    for noteOctDur in melodyArr:
+      totalBeats += noteOctDur[1]
+
+    # Setting y dimension
+    y = totalBeats // sig
+    
+    # Creating image
     img = MyImage((x, y), 0, 100, 'RGBA')
-    startingColor = mapping[startingNote]
 
-    for note in melodyArr:
+    # Keeping track of beats and 
+    # measures or x and y values
+    beat = 0
+    measure = 0
+
+    for noteOctDur in melodyArr:
+      
+      # Separating note and octave
+      note = ''
+      octave = ''
+      for char in noteOctDur[0]:
+        if (char in 'ABCDEN#'):
+          note += char
+        else:
+          octave += char
+
+      # Converting octave from
+      # str to int for alpha value
+      if (len(octave) != 0):
+        octave = int(octave)
+      else:
+        octave = 0
+
+      for halfNote in range(noteOctDur[1]):
         
+        # Setting alpha value based on octave
+        alphaVal = int((255 / 8) * (8 - octave))
 
+        # Adding the colored pixel to the image
+        img.putpixel((beat, measure), mapping[note] + (alphaVal,))
+        
+        # Changing beats and measures
+        # or x and y values
+        beat += 1
+        if (beat == sig):
+          measure = (measure + 1) % y
+        beat = beat % x
 
+    # Showing and returning image
     img.show()  
     return img
 
@@ -87,5 +133,15 @@ def PixelColour(melodyArr: [], sig: int, startingNote: str):
     For example, if the music is in a time signature of 8 beats, after every 7th iteration we start with 
  
     '''
-    
 
+def _test1():
+  M = [
+    ('C3', 1), ('C3', 1), ('D3', 2), ('NN', 2), 
+    ('C3', 2), ('NN', 2), ('E3', 2), ('C3', 4)
+  ]
+  
+  PixelColour(M, 4)
+    
+if __name__ == '__main__':
+  _test1()
+  
