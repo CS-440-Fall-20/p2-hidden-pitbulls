@@ -44,12 +44,16 @@ mapping = {
   'G': (255, 0, 255), 'G#': (255, 0, 127)
 }
 
-# melodyArr is the array of melodic beats described above
-# sig is the time signature of the music; e.g. 8 beats per measure, 16 beats per measure, etc
-# key is the key the song is in; e.g. A, C, Dm, F#
+# melodyArr is the array of melodic beats described above.
+# sig is the time signature of the music; 
+# e.g. 8 beats per measure, 16 beats per measure, etc.
+# key is the key the song is in; e.g. A, C, Dm, F#.
 def pixelColour(melodyArr: [], sig: int, key: str):
+    # Function to convert a melody to an image
+
     '''
-    1. Create an empty instance of myimage class with a large enough size for virtual pixels. x dimension of the image will be sig; y dimension will be size(melodyArr) // 2
+    MUST DELETE FOLLOWING COMMENTS - ONLY FOR DEVELOPERS
+    1. Create an empty instance of myimage class with a large enough size for virtual pixels. x dimension of the image will be sig; y dimension will be size(melodyArr) // no of beats per measure
     2. Determine the starting colour based on the root note of the music key. For example, if music is in the key of A, the starting colour is Red (use chromatic scale to colour wheel mapping).
     3. Iterate over each ith element of the melodyArr, based on the sig value. For example, if the music is in a time signature of 8 beats, after every 7th iteration we start with 
     4. 
