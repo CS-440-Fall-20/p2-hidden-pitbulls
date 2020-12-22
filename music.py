@@ -5,7 +5,7 @@ from myimage import MyImage
 '''
 An array containing the musical sequence in chords:
 Each entry music[m] of the array is a single beat. 
-It can either be a chord (fifth, major, minor or seventh) or silence.
+It can either be a chord (fifth, major, minor or seventh major) or silence.
 N refers to null, or beats with silence. 
 
 Color wheel for notes on the western chromatic scale:
@@ -26,7 +26,11 @@ Color wheel for notes on the western chromatic scale:
 chroma = [
   'A', 'A#', 'B', 'C', 'C#', 'D', 
   'D#', 'E', 'F', 'F#', 'G', 'G#'
-] 
+]
+
+# Scales for chords
+major = '02212221'
+minor = '02122122'
 
 # The chromatic scale to color wheel mapping
 mapping = {
@@ -41,7 +45,7 @@ mapping = {
 def _ChordToNotes(chord: str):
     '''
     Helper function to return notes given a chord.
-    Only for chords fifth, major, minor and seventh.
+    Only for chords fifth, major, minor and seventh major.
 
     Arguments:
     chord as a string
@@ -70,14 +74,33 @@ def _ChordToNotes(chord: str):
 
     # Returning list of notes according to
     # first note and chord type
+    ret = [firstNote]
+
     if (chordType == '5'):
-      return [firstNote, chroma[chromaInd + 4]]
+      for i in range(7):
+        chromaInd =+ (chromaInd + int(major[i])) % 12
+        if (i == 4):
+          ret.append(chroma[chromaInd])
+
     elif (chordType == 'M'):
-      return [firstNote, chroma[chromaInd + 2], chroma[chromaInd + 4]]
+      for i in range(7):
+        chromaInd = (chromaInd + int(major[i])) % 12
+        if ((i == 2) or (i == 4)):
+          ret.append(chroma[chromaInd])
+
     elif (chordType == 'm'):
-      return [firstNote, chroma[chromaInd + 3], chroma[chromaInd + 4]]
+      for i in range(7):
+        chromaInd =+ (chromaInd + int(minor[i])) % 12
+        if ((i == 3) or (i == 4)):
+          ret.append(chroma[chromaInd])
+    
     else:
-      return [firstNote, chroma[chromaInd + 2], chroma[chromaInd + 4], chroma[chromaInd + 6]]
+      for i in range(7):
+        chromaInd =+ (chromaInd + int(major[i])) % 12
+        if ((i == 2) or (i == 4) or (i == 6)):
+          ret.append(chroma[chromaInd])
+
+    return ret
 
 def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
     diff = abs(endPos[0] - startPos[0])
