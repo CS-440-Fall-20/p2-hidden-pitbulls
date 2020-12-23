@@ -26,7 +26,7 @@ chroma = [
   'D#', 'E', 'F', 'F#', 'G', 'G#'
 ]
 
-# Scales for chords
+# Scales for chords, based on the rules for composing scales relative to semitones from the previous note
 major = '02212221'
 minor = '02122122'
 
@@ -160,22 +160,24 @@ def CreateWall(music: []):
     music as a list of chords.
 
     Returns: 
-    The MyImage object img that contains the wall.
+    The MyImage object img that contains the 'chromatic wall'
+    (or grid of pixels with interpolated chord colours).
 
     '''
 
     # Setting y dimension
     yDim = len(music)
     
-    # Creating image
-    img = MyImage((16, yDim), 0, 20, 'RGBA')
+    # Creating image. 16 is used by default for number of columns,
+    # as we fix our program 16 divisions of a beat
+    img = MyImage((16, yDim), 2, 20, 'RGBA')
 
     # For each chord position or y value
     for chordPos in range(yDim):
       # Storing the chord
       chord = music[chordPos]
 
-      # If it is not silent
+      # If the beat is not a silent beat
       if (chord != 'N'):
         # Extracting notes from the chord
         notes = _ChordToNotes(chord)
@@ -208,7 +210,9 @@ def CreateWall(music: []):
     return img
 
 def _test():
-
+    
+    # Test array of chord progressions,
+    # based on the chords of "Still Alive" (Portal end song)
     music = [
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
