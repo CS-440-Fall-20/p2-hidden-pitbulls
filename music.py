@@ -26,11 +26,12 @@ chroma = [
   'D#', 'E', 'F', 'F#', 'G', 'G#'
 ]
 
-# Scales for chords, based on the rules for composing scales relative to semitones from the previous note
+# Scales for chords, based on the rules for composing 
+# scales relative to semitones from the previous note.
 major = '02212221'
 minor = '02122122'
 
-# The chromatic scale to color wheel mapping
+# The chromatic scale to color wheel mapping.
 mapping = {
   'A': (255, 0, 0), 'A#': (255, 127, 0), 
   'B': (255, 255, 0), 'C': (127, 255, 0), 
@@ -46,14 +47,14 @@ def _ChordToNotes(chord: str):
     Only for chords fifth, major, minor and seventh major.
 
     Arguments:
-    chord as a string
+    chord as a string.
 
     Returns:
-    A list of notes
+    A list of notes.
 
     '''
 
-    # Separating first note and chord types   
+    # Separating first note and chord types.   
     firstNote = ''
     chordType = ''
 
@@ -67,11 +68,11 @@ def _ChordToNotes(chord: str):
       chordType += 'M'
 
     # Finding the position of first note
-    # on the chromatic scale
+    # on the chromatic scale.
     chromaInd = chroma.index(firstNote)
 
     # Returning list of notes according to
-    # first note and chord type
+    # first note and chord type.
     ret = [firstNote]
 
     if (chordType == '5'):
@@ -103,7 +104,7 @@ def _ChordToNotes(chord: str):
 def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
     '''
     Helper function to interpolate colors 
-    between two pixels on a horizontal line
+    between two pixels on a horizontal line.
 
     Arguments:
     img as MyImage object to write pixels into.
@@ -118,13 +119,13 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
     '''
     diff = abs(endPos[0] - startPos[0])
 
-    # Color component gradients
+    # Color component gradients.
     r_grad = (endColor[0] - startColor[0]) / diff
     g_grad = (endColor[1] - startColor[1]) / diff
     b_grad = (endColor[2] - startColor[2]) / diff
     # a_grad = (endColor[3] - startColor[3]) / diff
 
-    # Coloring starting pixel
+    # Coloring starting pixel.
     img.putpixel(startPos, startColor)
 
     x = startPos[0]
@@ -133,10 +134,10 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
     g = startColor[1]
     b = startColor[2]
     # alpha value lowered to differentiate
-    # between played notes and interpolated colors
+    # between played notes and interpolated colors.
     a = 180 
 
-    # Interpolating and coloring
+    # Interpolating and coloring.
     for pixelPos in range(1, diff):
       x += 1
       r += r_grad
@@ -146,7 +147,7 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
 
       img.putpixel((x, y), (round(r), round(g), round(b), round(a)))
 
-    # Coloring ending pixel
+    # Coloring ending pixel.
     img.putpixel(endPos, endColor)
 
     return img
@@ -154,7 +155,7 @@ def _InterpolateHorizontal(img, startPos, endPos, startColor, endColor):
 
 def CreateWall(music: []):
     '''
-    Function to convert a melody to an image
+    Function to convert a melody to an image.
 
     Arguments:
     music as a list of chords.
@@ -165,54 +166,66 @@ def CreateWall(music: []):
 
     '''
 
-    # Setting y dimension
+    # Setting y dimension.
     yDim = len(music)
     
-    # Creating image. 16 is used by default for number of columns,
-    # as we fix our program 16 divisions of a beat
+    # Creating image 
+    # (16 is used by default for number of columns,
+    # as we fix our program 16 divisions of a beat).
     img = MyImage((16, yDim), 2, 20, 'RGBA')
 
-    # For each chord position or y value
+    # For each chord position or y value.
     for chordPos in range(yDim):
-      # Storing the chord
+      # Storing the chord.
       chord = music[chordPos]
 
-      # If the beat is not a silent beat
+      # If the beat is not a silent beat.
       if (chord != 'N'):
-        # Extracting notes from the chord
+        # Extracting notes from the chord.
         notes = _ChordToNotes(chord)
 
-        # Values needed to interpolate between notes
+        # Values needed to interpolate between notes.
         notesLastInd = len(notes) - 1
         jump = 15 // notesLastInd
 
-        # For each pairs of notes except the last two
+        # For each pairs of notes except the last two.
         for i in range(notesLastInd - 1):
-          # Storing start and end colors
+          # Storing start and end colors.
           startColor = mapping[notes[i]] + (255,)
           endColor = mapping[notes[i + 1]] + (255,)
 
-          # Interpolating colors in the middle accordingly
+          # Interpolating colors in the middle accordingly.
           img = _InterpolateHorizontal(img, ((jump * i), chordPos), ((jump * (i + 1)), chordPos), startColor, endColor)
 
-        # Interpolating colors between the last two notes
+        # Interpolating colors between the last two notes.
         startColor = endColor
         endColor = mapping[notes[notesLastInd]] + (255,)
         img = _InterpolateHorizontal(img, ((jump * (notesLastInd - 1)), chordPos), (15, chordPos), startColor, endColor)
 
       else:
-        # Else fill a white line of 16 pixels
+        # Else fill a white line of 16 pixels.
         color = (255,) * 4
         img = _InterpolateHorizontal(img, (0, chordPos), (15, chordPos), color, color)
 
-    # Showing and returning image
+    # Showing and returning image.
     img.show()  
     return img
 
 def _test():
+    '''
+    # Function to test the program.
+
+    Arguments:
+    None.
+
+    Returns:
+    None.
     
-    # Test array of chord progressions,
-    # based on the chords of "Still Alive" (Portal end song)
+    '''
+
+    # An array of chord progressions based
+    # on the chords of "Still Alive" 
+    # (Portal end song).   
     music = [
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
