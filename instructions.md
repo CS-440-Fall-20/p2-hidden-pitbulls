@@ -4,7 +4,7 @@ The main file is music.py, which has to be run. Make sure that myimage.py is in 
 
 For different test cases, modify the input of the program. The input is taken in the form of the 'music' array in music.py (line 15):
 
-music = [
+      music = [
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
       'D', 'N', 'D', 'D', 'Bm', 'N', 'Bm', 'Bm',
